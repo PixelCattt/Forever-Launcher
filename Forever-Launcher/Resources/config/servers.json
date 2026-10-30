@@ -1,0 +1,10 @@
+{
+  "servers": [
+    {
+      "name": "Forever-Server",
+      "portal": "trinity.actual.battle.net",
+      "loginPort": 1119,
+      "worldPort": 8085
+    }
+  ]
+}
