@@ -13,10 +13,11 @@ namespace ForeverLauncher
 {
   public static class App
   {
-    public const string Version = "2.5.0";
+    public const string Version = "3.0.0";
     public const string Title = "Forever Launcher";
     public const string ReleasesUrl = "https://github.com/PixelCattt/Forever-Launcher/releases/latest";
-    public const string DiscordUrl = "https://discord.gg/gRjgsqXNje";
+    public const string DiscordUrl = "https://discord.pixelcatt.dev";
+    public const string GitHubUrl = "https://github.pixelcatt.dev";
     public static string UpdatedTo;
 
     [STAThread]
@@ -25,7 +26,7 @@ namespace ForeverLauncher
       string[] commandLineArgs = Environment.GetCommandLineArgs();
       int num1 = Array.IndexOf<string>(commandLineArgs, "--updated");
       if (num1 > 0)
-        App.UpdatedTo = num1 + 1 < commandLineArgs.Length ? commandLineArgs[num1 + 1] : "2.5.0";
+        App.UpdatedTo = num1 + 1 < commandLineArgs.Length ? commandLineArgs[num1 + 1] : App.Version;
       bool createdNew;
       using (Mutex mutex = new Mutex(true, "ForeverLauncher-single", out createdNew))
       {
@@ -102,14 +103,14 @@ namespace ForeverLauncher
       try
       {
         Directory.CreateDirectory(Path.GetDirectoryName(App.CrashFile));
-        System.IO.File.AppendAllText(App.CrashFile, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " v2.5.0" + Environment.NewLine + (object) ex + Environment.NewLine + Environment.NewLine);
+        System.IO.File.AppendAllText(App.CrashFile, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " v" + App.Version + Environment.NewLine + (object) ex + Environment.NewLine + Environment.NewLine);
       }
       catch
       {
       }
     }
 
-    public static string CrashFile => Path.Combine(Settings.Dir, "crash.txt");
+    public static string CrashFile => Path.Combine(Settings.LogsDir, "crash.txt");
 
     private static void Crash(Exception ex)
     {

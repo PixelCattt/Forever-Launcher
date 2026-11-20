@@ -1,32 +1,38 @@
 {
   "servers": [
     {
-      "name": "Forever-Server",
-      "portal": "trinity.actual.battle.net",
+      "name": "Pixel's Forever",
+
+      "portal": "wow.pixelcatt.dev",
       "loginPort": 1119,
-      "statusURL": "",
+
       "realms": [
-        {
-          "name": "Normal",
-          "port": 8085,
-          "kind": "normal"
-        },
-        {
-          "name": "PvP",
-          "port": 8095,
-          "kind": "pvp"
-        },
-        {
-          "name": "RP",
-          "port": 8105,
-          "kind": "rp"
-        },
-        {
-          "name": "Hardcore",
-          "port": 8115,
-          "kind": "hardcore"
-        }
-      ]
+        { "name": "World", "port": 8085, "kind": "normal" }
+      ],
+
+      "statusURL": "https://cdn.pixelcatt.dev/WoW-Files/status.json",
+      "website": "https://wow.pixelcatt.dev"
+    },
+    {
+      "name": "Example-Server",
+
+      "portal": "portal.example.com",
+      "loginPort": 1119,
+
+      "realms": [
+        { "name": "Normal", "port": 8085, "kind": "normal" },
+        { "name": "PvP", "port": 8090, "kind": "pvp" },
+        { "name": "Roleplay", "port": 8095, "kind": "rp" },
+        { "name": "Hardcore", "port": 8100, "kind": "hardcore" }
+      ],
+
+      "publicKey": "02596F0D0C061A8B30745988FD72C59E29EC367FB0F341F28E0F08D037BAFC69",
+      "regionGroup": 8,
+
+      "supportHost": "support.example.com",
+
+      "statusURL": "https://example.com/status.json",
+      "website": "https://example.com"
     }
   ]
 }

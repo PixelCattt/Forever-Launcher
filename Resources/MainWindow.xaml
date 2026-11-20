@@ -318,9 +318,9 @@
         <!-- Title bar (draggable) -->
         <Grid x:Name="TitleBar" Grid.Row="0" Background="Transparent">
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,1,0,0">
-            <Path Width="16" Height="16" Stretch="Uniform" Fill="{StaticResource Gold}" Data="M8,0 L16,8 L8,16 L0,8 Z M8,4 L4,8 L8,12 L12,8 Z"/>
+            <Image x:Name="LauncherIcon" Width="18" Height="18" Stretch="Uniform"/>
             <TextBlock x:Name="LauncherTitleText" Text="FOREVER-LAUNCHER" Margin="9,0,0,0" FontSize="12" FontWeight="SemiBold" Foreground="#C9BFA6" VerticalAlignment="Center"/>
-            <TextBlock x:Name="LauncherVersionText" Text="v2.5.0" Margin="5,0,0,0" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Dim}" VerticalAlignment="Center"/>
+            <TextBlock x:Name="LauncherVersionText" Text="v3.0.0" Margin="5,0,0,0" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Dim}" VerticalAlignment="Center"/>
           </StackPanel>
           <Border x:Name="UpdateBanner" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
                   CornerRadius="12" Padding="12,4" Background="#AA3A2A08" BorderBrush="#88E8C46A" BorderThickness="1">
@@ -330,6 +330,10 @@
             </StackPanel>
           </Border>
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="GitHubButton" Style="{StaticResource CircleActionButton}" Height="30" Margin="0,1,6,-1" ToolTip="GitHub" AutomationProperties.Name="GitHub" VerticalAlignment="Center">
+              <Path Width="16" Height="16" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                    Data="M8,0 C3.58,0 0,3.58 0,8 C0,11.54 2.29,14.53 5.47,15.59 C5.87,15.66 6.02,15.42 6.02,15.21 C6.02,15.02 6.01,14.39 6.01,13.72 C4,14.09 3.48,13.23 3.32,12.78 C3.23,12.55 2.64,11.84 2.3,11.69 C2.02,11.54 1.62,11.17 2.29,11.16 C2.92,11.15 3.37,11.74 3.52,11.98 C4.24,13.19 5.39,12.85 5.85,12.64 C5.92,12.12 6.13,11.77 6.36,11.57 C4.58,11.37 2.72,10.68 2.72,7.62 C2.72,6.75 3.03,6.03 3.54,5.47 C3.46,5.27 3.18,4.45 3.62,3.35 C3.62,3.35 4.29,3.14 5.82,4.17 C7.1,3.81 8.46,3.81 9.74,4.17 C11.27,3.13 11.94,3.35 11.94,3.35 C12.38,4.45 12.1,5.27 12.02,5.47 C12.53,6.03 12.84,6.74 12.84,7.62 C12.84,10.69 10.97,11.37 9.19,11.57 C9.48,11.82 9.73,12.3 9.73,13.05 C9.73,14.12 9.72,14.98 9.72,15.21 C9.72,15.42 9.87,15.67 10.27,15.59 C13.45,14.53 15.74,11.53 15.74,8 C15.74,3.58 12.16,0 7.74,0 Z"/>
+            </Button>
             <Button x:Name="DiscordButton" Style="{StaticResource CircleActionButton}" Height="30" Margin="0,1,6,-1" ToolTip="Discord" AutomationProperties.Name="Discord" VerticalAlignment="Center">
               <Path Width="16" Height="14" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                     Data="M20.3,4.4 C18.8,3.7 17.1,3.2 15.4,2.9 C15.2,3.3 14.9,3.8 14.8,4.2 C12.9,3.9 11.1,3.9 9.2,4.2 C9.1,3.8 8.8,3.3 8.6,2.9 C6.9,3.2 5.2,3.7 3.7,4.4 C0.6,9 -0.3,13.5 0.2,18 C2.2,19.5 4.2,20.4 6.1,21 C6.6,20.4 7,19.7 7.4,18.9 C6.7,18.7 6,18.3 5.4,17.9 C5.6,17.8 5.7,17.7 5.9,17.6 C9.8,19.4 14.2,19.4 18.1,17.6 C18.3,17.7 18.4,17.8 18.6,17.9 C18,18.3 17.3,18.7 16.6,18.9 C17,19.7 17.4,20.4 17.9,21 C19.8,20.4 21.8,19.5 23.8,18 C24.3,12.8 22.9,8.3 20.3,4.4 Z M8,15.3 C6.8,15.3 5.9,14.2 5.9,12.9 C5.9,11.6 6.8,10.5 8,10.5 C9.2,10.5 10.1,11.6 10.1,12.9 C10.1,14.2 9.2,15.3 8,15.3 Z M16,15.3 C14.8,15.3 13.9,14.2 13.9,12.9 C13.9,11.6 14.8,10.5 16,10.5 C17.2,10.5 18.1,11.6 18.1,12.9 C18.1,14.2 17.2,15.3 16,15.3 Z"/>

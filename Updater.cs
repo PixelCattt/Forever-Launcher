@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 
@@ -20,7 +21,8 @@ namespace ForeverLauncher
         private const string LatestReleaseApi = "https://api.github.com/repos/PixelCattt/Forever-Launcher/releases/latest";
 
         public static string ExePath => Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
-        private static string NewPath => ExePath + ".new";
+        private static string NewPath => Path.Combine(Settings.Dir, "update.new");
+        private static string InstallNewPath => ExePath + ".new";
         private static string OldPath => ExePath + ".old";
 
         private static WebClient Client()
@@ -73,6 +75,7 @@ namespace ForeverLauncher
 
         public static async Task Download(LauncherRelease release, Action<int> progress)
         {
+            Directory.CreateDirectory(Settings.Dir);
             byte[] executable;
             using (WebClient client = Client())
             {
@@ -94,17 +97,69 @@ namespace ForeverLauncher
             File.WriteAllBytes(NewPath, executable);
         }
 
-        public static void InstallAndRestart(string version)
+        public static void InstallAndRestart(string version, bool canWriteHere)
         {
+            if (!canWriteHere)
+            {
+                RequestElevatedInstall(version);
+                return;
+            }
+
             try { if (File.Exists(OldPath)) File.Delete(OldPath); } catch { }
+            File.Copy(NewPath, InstallNewPath, true);
             File.Move(ExePath, OldPath);
-            try { File.Move(NewPath, ExePath); }
+            try { File.Move(InstallNewPath, ExePath); }
             catch { File.Move(OldPath, ExePath); throw; }
             Process.Start(new ProcessStartInfo(ExePath, UpdatedArg + " " + version)
             {
                 UseShellExecute = false,
                 WorkingDirectory = Path.GetDirectoryName(ExePath)
             });
+        }
+
+        private static void RequestElevatedInstall(string version)
+        {
+            string script =
+                "$ErrorActionPreference = 'Stop'\n" +
+                "$exe = " + PowerShellQuote(ExePath) + "\n" +
+                "$staged = " + PowerShellQuote(NewPath) + "\n" +
+                "$version = " + PowerShellQuote(version) + "\n" +
+                "$log = " + PowerShellQuote(Settings.LogFile) + "\n" +
+                "$old = $exe + '.old'\n" +
+                "$next = $exe + '.new'\n" +
+                "try {\n" +
+                "  $parent = Get-Process -Id " + Process.GetCurrentProcess().Id + " -ErrorAction SilentlyContinue\n" +
+                "  if ($parent) { $parent.WaitForExit() }\n" +
+                "  if (Test-Path -LiteralPath $old) { Remove-Item -LiteralPath $old -Force }\n" +
+                "  Move-Item -LiteralPath $exe -Destination $old\n" +
+                "  try {\n" +
+                "    Copy-Item -LiteralPath $staged -Destination $next -Force\n" +
+                "    Move-Item -LiteralPath $next -Destination $exe\n" +
+                "  } catch {\n" +
+                "    if (Test-Path -LiteralPath $old) { Move-Item -LiteralPath $old -Destination $exe -Force }\n" +
+                "    throw\n" +
+                "  }\n" +
+                "  Start-Process -FilePath $exe -ArgumentList @('--updated', $version) -WorkingDirectory (Split-Path -Parent $exe)\n" +
+                "  Remove-Item -LiteralPath $old -Force -ErrorAction SilentlyContinue\n" +
+                "  Remove-Item -LiteralPath $staged -Force -ErrorAction SilentlyContinue\n" +
+                "} catch {\n" +
+                "  New-Item -ItemType Directory -Path (Split-Path -Parent $log) -Force | Out-Null\n" +
+                "  Add-Content -LiteralPath $log -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] Elevated update failed: ' + $_.Exception.Message)\n" +
+                "  exit 1\n" +
+                "}\n";
+            string encodedScript = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+            string powershell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+            Process.Start(new ProcessStartInfo(powershell, "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand " + encodedScript)
+            {
+                UseShellExecute = true,
+                Verb = "runas",
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
+        }
+
+        private static string PowerShellQuote(string value)
+        {
+            return "'" + value.Replace("'", "''") + "'";
         }
 
         public static void Cleanup()
@@ -116,8 +171,8 @@ namespace ForeverLauncher
                     try
                     {
                         if (File.Exists(OldPath)) File.Delete(OldPath);
-                        if (!File.Exists(NewPath)) break;
-                        File.Delete(NewPath);
+                        if (File.Exists(InstallNewPath)) File.Delete(InstallNewPath);
+                        if (File.Exists(NewPath)) File.Delete(NewPath);
                         break;
                     }
                     catch { await Task.Delay(500); }
@@ -127,14 +182,18 @@ namespace ForeverLauncher
 
         public static bool CanWriteHere()
         {
+            string probe = Path.Combine(Path.GetDirectoryName(ExePath), ".update-probe-" + Guid.NewGuid().ToString("N"));
             try
             {
-                string probe = Path.Combine(Path.GetDirectoryName(ExePath), ".update-probe");
                 File.WriteAllText(probe, "");
                 File.Delete(probe);
                 return true;
             }
             catch { return false; }
+            finally
+            {
+                try { if (File.Exists(probe)) File.Delete(probe); } catch { }
+            }
         }
     }
 }

@@ -32,7 +32,7 @@ namespace ForeverLauncher
     {
       Servers.List.Clear();
       Servers.Errors.Clear();
-      Servers.FilePath = Servers.PortablePath;
+      Servers.FilePath = Servers.UserPath;
       Servers.EnsureConfigFile();
       object[] objArray;
       try
@@ -94,36 +94,21 @@ namespace ForeverLauncher
     {
       try
       {
-        if (File.Exists(Servers.PortablePath) && Servers.IsExampleConfig(Servers.PortablePath))
-          File.Delete(Servers.PortablePath);
-
-        if (File.Exists(Servers.PortablePath))
+        Directory.CreateDirectory(Settings.Dir);
+        if (File.Exists(Servers.UserPath) && !Servers.IsExampleConfig(Servers.UserPath))
           return;
 
-        Directory.CreateDirectory(Path.GetDirectoryName(Servers.PortablePath));
-        if (File.Exists(Servers.UserPath) && !Servers.IsExampleConfig(Servers.UserPath))
-          File.Copy(Servers.UserPath, Servers.PortablePath, false);
+        if (File.Exists(Servers.UserPath))
+          File.Delete(Servers.UserPath);
+
+        if (File.Exists(Servers.PortablePath) && !Servers.IsExampleConfig(Servers.PortablePath))
+          File.Copy(Servers.PortablePath, Servers.UserPath, false);
         else
-          Servers.WriteBundledConfig(Servers.PortablePath);
+          Servers.WriteBundledConfig(Servers.UserPath);
       }
       catch (Exception ex)
       {
-        Servers.Errors.Add("Could not create servers.json beside the launcher: " + ex.Message);
-        try
-        {
-          Directory.CreateDirectory(Path.GetDirectoryName(Servers.UserPath));
-          if (!File.Exists(Servers.UserPath) || Servers.IsExampleConfig(Servers.UserPath))
-          {
-            if (File.Exists(Servers.UserPath))
-              File.Delete(Servers.UserPath);
-            Servers.WriteBundledConfig(Servers.UserPath);
-          }
-          Servers.FilePath = Servers.UserPath;
-        }
-        catch (Exception fallbackError)
-        {
-          Servers.Errors.Add("Could not create a user server config: " + fallbackError.Message);
-        }
+        Servers.Errors.Add("Could not create servers.json in the user config folder: " + ex.Message);
       }
     }
     private static bool IsExampleConfig(string path)

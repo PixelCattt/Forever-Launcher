@@ -14,6 +14,10 @@ namespace ForeverLauncher
 
     public static string Dir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Forever-Launcher");
 
+    public static string LogsDir => Path.Combine(Settings.Dir, "logs");
+
+    public static string LogFile => Path.Combine(Settings.LogsDir, "log.txt");
+
     private static string ConfigPath => Path.Combine(Settings.Dir, Settings.ConfigFileName);
 
     public static string LoadLanguage()

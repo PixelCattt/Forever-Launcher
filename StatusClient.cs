@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -82,23 +81,7 @@ namespace ForeverLauncher
         if (!(new JavaScriptSerializer().DeserializeObject(json) is Dictionary<string, object> root))
           return;
         s.FeedOk = true;
-        DateTime updated;
-        if (DateTime.TryParse(StatusClient.Str(root, "updated"), (IFormatProvider) null, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out updated))
-          s.FeedFresh = (DateTime.UtcNow - updated).TotalMinutes < 15.0;
-        Dictionary<string, object> realm = root.ContainsKey("realm") ? root["realm"] as Dictionary<string, object> : (Dictionary<string, object>) null;
-        if (realm != null && s.FeedFresh)
-        {
-          s.FeedLoginUp = StatusClient.Bool(realm, "login");
-          s.FeedWorldUp = StatusClient.Bool(realm, "world");
-        }
         s.Maintenance = StatusClient.Bool(root, "maintenance");
-        s.Root = new FeedEntry(root);
-        Dictionary<string, object> launcher = root.ContainsKey("launcher") ? root["launcher"] as Dictionary<string, object> : (Dictionary<string, object>) null;
-        if (launcher != null)
-        {
-          s.LatestLauncher = StatusClient.Str(launcher, "version");
-          s.LauncherUrl = StatusClient.Str(launcher, "url");
-        }
         foreach (object obj in StatusClient.List(root, "news"))
         {
           if (obj is Dictionary<string, object> d)
@@ -114,9 +97,6 @@ namespace ForeverLauncher
           if (obj is string input && Regex.IsMatch(input, "^1\\.60\\.\\d+\\.\\d{5}$"))
             s.ClientBuilds.Add(input);
         }
-        if (s.ClientBuilds.Count <= 0)
-          return;
-        Patcher.FeedVersions = s.ClientBuilds.ToArray();
       }
       catch
       {
@@ -141,11 +121,5 @@ namespace ForeverLauncher
       return !d.TryGetValue(k, out obj) || !(obj is IEnumerable) || obj is string ? (IEnumerable) new object[0] : (IEnumerable) obj;
     }
 
-    public static bool IsNewer(string latest, string current)
-    {
-      Version result1;
-      Version result2;
-      return latest != null && Version.TryParse(latest, out result1) && Version.TryParse(current, out result2) && result1 > result2;
-    }
   }
 }

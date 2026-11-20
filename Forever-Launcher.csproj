@@ -11,7 +11,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ApplicationManifest>Resources\App.manifest</ApplicationManifest>
-    <ApplicationIcon>Resources\App.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\icons\App.ico</ApplicationIcon>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">

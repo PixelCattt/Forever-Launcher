@@ -1,5 +1,25 @@
+# Node.js Dependencies
+node_modules/
+
+# Environment Variables
+.env
+
+# Log Files
+logs/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor Files
+.vscode/
+.idea/
+.vs/
+
+# Build Files
 bin/
 obj/
-.vs/
+
+# Other
 *.user
 *.suo

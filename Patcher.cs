@@ -24,7 +24,7 @@ namespace ForeverLauncher
     private const string AllowPrefix = "https://wauth.teledit.com/Danal";
     private const string AllowEntryHost = "wauth\\.teledit\\.com/Danal";
     private const string NewestFogBuild = "1.60.1.70790";
-    public static readonly string[] SupportedVersions = new string[18]
+    public static readonly string[] SupportedVersions = new string[19]
     {
       "1.60.1.69913",
       "1.60.1.69977",
@@ -43,7 +43,8 @@ namespace ForeverLauncher
       "1.60.1.70450",
       "1.60.1.70532",
       "1.60.1.70862",
-      "1.60.1.70938"
+      "1.60.1.70938",
+      "1.60.1.70959"
     };
     public static volatile string[] FeedVersions = new string[0];
     private static readonly string[] KnownKeys = new string[12]
@@ -250,7 +251,7 @@ namespace ForeverLauncher
       this.ServerName = server.Name;
       this.SupportHost = server.SupportHost;
       this.exePath = Path.GetFullPath(Path.Combine(gameDir, "Wow.exe"));
-      this.logFile = Path.Combine(gameDir, "Logs", "launcher.log");
+      this.logFile = Settings.LogFile;
     }
 
     public string LogFile => this.logFile;
@@ -566,7 +567,7 @@ namespace ForeverLauncher
 
     private void RunCore()
     {
-      this.Log("----- start (launcher 2.5.0, server " + this.ServerName + ", portal " + this.Portal + ", slot " + (object) this.TargetGroup + ")");
+      this.Log("----- start (launcher " + App.Version + ", server " + this.ServerName + ", portal " + this.Portal + ", slot " + (object) this.TargetGroup + ")");
       string version;
       StatusMessage msg = Patcher.CheckGameDir(this.gameDir, out version);
       if (msg != null)

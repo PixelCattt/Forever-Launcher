@@ -73,6 +73,7 @@ namespace ForeverLauncher
     private int updatePercent;
     private string updateError;
     private ServerStatus lastStatus;
+    private string lastFeedBuilds;
     private ServerEntry server;
     private StatusMessage lastStep;
     private static readonly System.Windows.Media.Color Green = System.Windows.Media.Color.FromRgb((byte) 92, (byte) 214, (byte) 122);
@@ -88,7 +89,12 @@ namespace ForeverLauncher
       this.ui = this.Window.Dispatcher;
       try
       {
-        this.Window.Icon = (ImageSource) System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(LauncherWindow.AppIcon().Handle, Int32Rect.Empty, (BitmapSizeOptions) null);
+        using (Icon appIcon = LauncherWindow.AppIcon())
+        {
+          ImageSource iconSource = (ImageSource) System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(appIcon.Handle, Int32Rect.Empty, (BitmapSizeOptions) null);
+          this.Window.Icon = iconSource;
+          this.Find<System.Windows.Controls.Image>("LauncherIcon").Source = iconSource;
+        }
       }
       catch
       {
@@ -134,9 +140,12 @@ namespace ForeverLauncher
           return;
         LauncherWindow.OpenUrl(this.server.Website);
       });
-      System.Windows.Controls.Button button = this.Find<System.Windows.Controls.Button>("DiscordButton");
-      button.Click += (RoutedEventHandler) ((s, e) => LauncherWindow.OpenUrl("https://discord.gg/gRjgsqXNje"));
-      button.ToolTip = (object) "Discord";
+      System.Windows.Controls.Button githubButton = this.Find<System.Windows.Controls.Button>("GitHubButton");
+      githubButton.Click += (RoutedEventHandler) ((s, e) => LauncherWindow.OpenUrl(App.GitHubUrl));
+      githubButton.ToolTip = (object) "GitHub";
+      System.Windows.Controls.Button discordButton = this.Find<System.Windows.Controls.Button>("DiscordButton");
+      discordButton.Click += (RoutedEventHandler) ((s, e) => LauncherWindow.OpenUrl(App.DiscordUrl));
+      discordButton.ToolTip = (object) "Discord";
       this.languageButton.Click += (RoutedEventHandler) ((s, e) => this.ShowLanguageMenu());
       this.launcherVersionText.Text = "v" + App.Version;
       this.Find<Grid>("TitleBar").MouseLeftButtonDown += (MouseButtonEventHandler) ((s, e) =>
@@ -161,7 +170,7 @@ namespace ForeverLauncher
       this.logButton.Click += (RoutedEventHandler) ((s, e) => this.OpenLog());
       this.updateLink.Click += (RoutedEventHandler) ((s, e) =>
       {
-        if (this.updateState == LauncherWindow.UpdateState.Available && Updater.CanWriteHere())
+        if (this.updateState == LauncherWindow.UpdateState.Available)
           this.RunLauncherUpdate();
         else
           LauncherWindow.OpenUrl(this.launcherUpdate == null || this.launcherUpdate.PageUrl == null ? this.updateUrl : this.launcherUpdate.PageUrl);
@@ -206,8 +215,6 @@ namespace ForeverLauncher
       this.launcherUpdate = r;
       this.updateState = LauncherWindow.UpdateState.Available;
       this.RenderLauncherUpdate();
-      if (!Updater.CanWriteHere())
-        return;
       this.RunLauncherUpdate();
     }
 
@@ -220,6 +227,7 @@ namespace ForeverLauncher
       this.RenderLauncherUpdate();
       try
       {
+        bool canWriteHere = Updater.CanWriteHere();
         await Updater.Download(this.launcherUpdate, (Action<int>) (p => this.ui.BeginInvoke((Action) (() =>
         {
           if (this.updateState != LauncherWindow.UpdateState.Downloading)
@@ -229,7 +237,7 @@ namespace ForeverLauncher
         }))));
         this.updateState = LauncherWindow.UpdateState.Restarting;
         this.RenderLauncherUpdate();
-        Updater.InstallAndRestart(this.launcherUpdate.Version);
+        Updater.InstallAndRestart(this.launcherUpdate.Version, canWriteHere);
         this.Shutdown();
       }
       catch (Exception ex)
@@ -435,22 +443,44 @@ namespace ForeverLauncher
         else
         {
           s.FeedOk = true;
-          s.Root = this.lastStatus.Root;
           s.News = this.lastStatus.News;
           s.Links = this.lastStatus.Links;
-          s.LatestLauncher = this.lastStatus.LatestLauncher;
-          s.LauncherUrl = this.lastStatus.LauncherUrl;
+          s.ClientBuilds = this.lastStatus.ClientBuilds;
           this.lastStatus = s;
         }
+        if (s.FeedOk)
+          Patcher.FeedVersions = s.ClientBuilds.ToArray();
         this.RenderStatus(s);
+        this.RefreshBuildNotice(s);
       }
+    }
+
+    private void RefreshBuildNotice(ServerStatus s)
+    {
+      if (!s.FeedOk)
+        return;
+      string feedBuilds = string.Join(",", s.ClientBuilds.ToArray());
+      if (feedBuilds == this.lastFeedBuilds)
+        return;
+      this.lastFeedBuilds = feedBuilds;
+      if (this.gameRunning || this.gameDir == null)
+        return;
+      string version;
+      if (Patcher.CheckGameDir(this.gameDir, out version) != null)
+        return;
+      this.Step(Patcher.UntestedNotice(version) ?? new StatusMessage(MessageKind.Info, "ui.ready", new object[0]));
     }
 
     private void RenderStatus(ServerStatus s)
     {
       System.Windows.Media.Color c;
       string key;
-      if (s.LoginUp && s.WorldUp)
+      if (s.Maintenance)
+      {
+        c = LauncherWindow.Amber;
+        key = "status.maintenance";
+      }
+      else if (s.LoginUp && s.WorldUp)
       {
         c = LauncherWindow.Green;
         key = "status.online";
@@ -465,16 +495,6 @@ namespace ForeverLauncher
         c = LauncherWindow.Amber;
         key = "status.logindown";
       }
-      else if (s.FeedFresh && s.FeedLoginUp)
-      {
-        c = LauncherWindow.Amber;
-        key = "status.unreachable";
-      }
-      else if (s.Maintenance)
-      {
-        c = LauncherWindow.Amber;
-        key = "status.maintenance";
-      }
       else
       {
         c = LauncherWindow.Red;
@@ -488,9 +508,8 @@ namespace ForeverLauncher
       this.loginLabel.Text = Localization.Get("ui.login") + (s.LoginMs >= 0L ? " · " + s.LoginMs.ToString() + "ms" : "");
       this.detailText.Text = "";
       this.detailText.Visibility = Visibility.Collapsed;
-      string str = s.Root.Get("message") ?? "";
-      this.messageText.Text = str;
-      this.messageText.Visibility = string.IsNullOrWhiteSpace(str) ? Visibility.Collapsed : Visibility.Visible;
+      this.messageText.Text = "";
+      this.messageText.Visibility = Visibility.Collapsed;
       if (s.FeedOk)
       {
         this.FillNews(s);
@@ -500,12 +519,6 @@ namespace ForeverLauncher
         this.ShowNewsText(Localization.Get("ui.nofeed"));
       else
         this.ShowNewsText(Localization.Get("ui.newsfail"));
-      if (this.updateState != LauncherWindow.UpdateState.None || !StatusClient.IsNewer(s.LatestLauncher, App.Version))
-        return;
-      this.updateText.Text = Localization.Get("ui.update", s.LatestLauncher);
-      if (!string.IsNullOrEmpty(s.LauncherUrl))
-        this.updateUrl = s.LauncherUrl;
-      this.updateBanner.Visibility = Visibility.Visible;
     }
 
     private void FillRealms(ServerStatus s)
@@ -643,9 +656,11 @@ namespace ForeverLauncher
     {
       this.server = s;
       this.lastStatus = (ServerStatus) null;
+      this.lastFeedBuilds = null;
+      Patcher.FeedVersions = new string[0];
       this.serverButton.Content = (object) (s != null ? s.Name + " (" + s.Portal + ")  ▾" : "-");
       this.websiteLink.Visibility = s == null || string.IsNullOrEmpty(s.Website) ? Visibility.Collapsed : Visibility.Visible;
-      this.websiteLink.ToolTip = s != null && !string.IsNullOrEmpty(s.Website) ? s.Website : Localization.Get("ui.website");
+      this.websiteLink.ToolTip = Localization.Get("ui.website");
       this.updateBanner.Visibility = Visibility.Collapsed;
       if (save && s != null)
         Settings.SaveServer(s.Name);
@@ -868,9 +883,7 @@ namespace ForeverLauncher
 
     private void OpenLog()
     {
-      if (this.gameDir == null)
-        return;
-      string str = System.IO.Path.Combine(this.gameDir, "Logs", "launcher.log");
+      string str = Settings.LogFile;
       if (System.IO.File.Exists(str))
       {
         try
