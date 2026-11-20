@@ -23,15 +23,6 @@ namespace ForeverLauncher
         private static string NewPath => ExePath + ".new";
         private static string OldPath => ExePath + ".old";
 
-        public static bool AutoUpdate
-        {
-            get
-            {
-                try { return File.ReadAllText(Path.Combine(Settings.Dir, "autoupdate.txt")).Trim() != "0"; }
-                catch { return true; }
-            }
-        }
-
         private static WebClient Client()
         {
             WebClient client = new WebClient();

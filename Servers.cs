@@ -56,8 +56,7 @@ namespace ForeverLauncher
             PublicKey = (Servers.Str(d1, "publicKey") ?? "02596F0D0C061A8B30745988FD72C59E29EC367FB0F341F28E0F08D037BAFC69").Trim().ToUpperInvariant(),
             RegionGroup = Servers.Int(d1, "regionGroup", 8),
             LoginPort = Servers.Int(d1, "loginPort", 1119),
-            WorldPort = Servers.Int(d1, "worldPort", 8085),
-            StatusUrl = Servers.Str(d1, "statusUrl") ?? "",
+            StatusUrl = Servers.Str(d1, "statusURL") ?? Servers.Str(d1, "statusUrl") ?? "",
             Website = Servers.Str(d1, "website") ?? "",
             SupportHost = (Servers.Str(d1, "supportHost") ?? "").Trim()
           };
@@ -77,8 +76,6 @@ namespace ForeverLauncher
                 });
             }
           }
-          if (serverEntry.Realms.Count == 0)
-            serverEntry.Realms = ServerEntry.DefaultRealms(serverEntry.WorldPort);
           string str = serverEntry.Validate();
           if (str != null)
             Servers.Errors.Add((serverEntry.Name.Length > 0 ? serverEntry.Name : "server #" + (object) (Servers.List.Count + Servers.Errors.Count + 1)) + ": " + str);

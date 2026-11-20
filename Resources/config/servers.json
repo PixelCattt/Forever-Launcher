@@ -1,0 +1,32 @@
+{
+  "servers": [
+    {
+      "name": "Forever-Server",
+      "portal": "trinity.actual.battle.net",
+      "loginPort": 1119,
+      "statusURL": "",
+      "realms": [
+        {
+          "name": "Normal",
+          "port": 8085,
+          "kind": "normal"
+        },
+        {
+          "name": "PvP",
+          "port": 8095,
+          "kind": "pvp"
+        },
+        {
+          "name": "RP",
+          "port": 8105,
+          "kind": "rp"
+        },
+        {
+          "name": "Hardcore",
+          "port": 8115,
+          "kind": "hardcore"
+        }
+      ]
+    }
+  ]
+}

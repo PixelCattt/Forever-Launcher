@@ -13,9 +13,9 @@ namespace ForeverLauncher
 {
   public sealed class Patcher
   {
-    public const string ConfigName = "ForeverLauncher.wtf";
+    public const string ConfigName = "Forever-Launcher.wtf";
     public const string ExeName = "Wow.exe";
-    public const string ExpectedVersion = "1.60.1.70532";
+    public const string ExpectedVersion = "1.60.1.70938";
     private const int EntrySize = 40;
     private const int EntryCount = 12;
     private const int BlockSize = 480;
@@ -23,8 +23,8 @@ namespace ForeverLauncher
     private const string AllowSuffix = "([:/\\?].*|\\n|$)";
     private const string AllowPrefix = "https://wauth.teledit.com/Danal";
     private const string AllowEntryHost = "wauth\\.teledit\\.com/Danal";
-    private const string NewestFogBuild = "1.60.1.70425";
-    public static readonly string[] SupportedVersions = new string[16]
+    private const string NewestFogBuild = "1.60.1.70790";
+    public static readonly string[] SupportedVersions = new string[18]
     {
       "1.60.1.69913",
       "1.60.1.69977",
@@ -41,7 +41,9 @@ namespace ForeverLauncher
       "1.60.1.70374",
       "1.60.1.70425",
       "1.60.1.70450",
-      "1.60.1.70532"
+      "1.60.1.70532",
+      "1.60.1.70862",
+      "1.60.1.70938"
     };
     public static volatile string[] FeedVersions = new string[0];
     private static readonly string[] KnownKeys = new string[12]
@@ -135,6 +137,18 @@ namespace ForeverLauncher
       {
         "1.60.1.70532",
         "=1.60.1.70425"
+      },
+      {
+        "1.60.1.70790",
+        "000014420000A142000008420000000000000042CDCCCC3D0000A0410AD7233E0000003F0AD7A33CCDCC4C3D9A99193F9A99993F8FC2F53C000000400000803F0AD7A33FA4703D3FCDCC4C3F0AD7233D0000003ECDCC4C3E0AD7233CCDCCCC3ECDCCCC3C9A99193E3333333F9A99993E8EBEAC3EFEBAA43EB95F973E36788E3E0000803E6666E63ECDCC0C3F0AD7A33D3333333E295C0F3E0000C03F295C8F3D8FC2753D00004040CDCC8C3F8FC2F53D0000C04000000041000060406666663E000020403333B33E0000403F0000A040BCBBBB3E00008040CDCC8C3EABAAAA3E2ED8823E0000A03F000070419A99593F00002041333333406666A63FF628DC3E9A99993D8FC2F53EB81E053E14AE473EEC51B83DEC51383EA4703D3E022B073E0000D03F713DAA3F5555B53FC771DC3F5655E53F9A99493E3333433E9A99393ECDCC2C3E0000403E1111513E6666563ECDCC9C3E3333A33ECDCCAC3E3433B33E9A99B93E6666A63E5655953E0000903EE32B3E3E843A283E00008241EFEEAE3E610BB63E0000C03E5655D53EDEDDDD3E5555D53E8988C83E9A99193DBCBB3B3DEFEE6E3D8988883D388EE33CA8AAAA3CDDDDDD3DE27A143E000040413BA8033E532EE53DAE47E13D6666263F7B142E3EC3F5283F6666E63FF6285C3F6EDBB63EE22B3E3F295C8F3E3333F33F9A99D93FCDCCCC3F3333D33F5C8F423E8FC2753C5839B43CA69BC43D25491240DCB62D4000001C4066662640713D0A3E0000503F5555453F5655353FAAAA2A3F0000203F5555353FC7715C3F5655653F6666663F6AA5563FB1133B3F3333B33F"
+      },
+      {
+        "1.60.1.70862",
+        "=1.60.1.70790"
+      },
+      {
+        "1.60.1.70938",
+        "=1.60.1.70790"
       }
     };
     private readonly string gameDir;
@@ -259,7 +273,7 @@ namespace ForeverLauncher
         return (StatusMessage) null;
       string[] parts = version.Split('.');
       int build;
-      if (parts.Length == 0 || !int.TryParse(parts[parts.Length - 1], out build) || build <= 70685)
+      if (parts.Length == 0 || !int.TryParse(parts[parts.Length - 1], out build) || build <= 70790)
         return (StatusMessage) null;
       return new StatusMessage(MessageKind.Warn, "dir.untested", new object[1]
       {
@@ -314,13 +328,13 @@ namespace ForeverLauncher
     public void EnsureConfig()
     {
       string str1 = Path.Combine(this.gameDir, "WTF");
-      string str2 = Path.Combine(str1, "ForeverLauncher.wtf");
+      string str2 = Path.Combine(str1, Patcher.ConfigName);
       Directory.CreateDirectory(str1);
       string str3 = Path.Combine(str1, "Config.wtf");
       if (!File.Exists(str2) && File.Exists(str3))
       {
         File.Copy(str3, str2);
-        this.Say(MessageKind.Dim, "p.wtfcreated", (object) "ForeverLauncher.wtf");
+        this.Say(MessageKind.Dim, "p.wtfcreated", (object) Patcher.ConfigName);
       }
       List<string> stringList = File.Exists(str2) ? ((IEnumerable<string>) File.ReadAllLines(str2)).ToList<string>() : new List<string>();
       string wanted = "SET portal \"" + this.Portal + "\"";
@@ -366,7 +380,7 @@ namespace ForeverLauncher
       if (!flag1)
         return;
       File.WriteAllLines(str2, (IEnumerable<string>) stringList);
-      this.Say(MessageKind.Dim, "p.wtfupdated", (object) "ForeverLauncher.wtf", (object) this.Portal);
+      this.Say(MessageKind.Dim, "p.wtfupdated", (object) Patcher.ConfigName, (object) this.Portal);
     }
 
     private static bool SetLine(List<string> lines, string cvar, string value)
@@ -552,7 +566,7 @@ namespace ForeverLauncher
 
     private void RunCore()
     {
-      this.Log("----- start (launcher 2.4.2, server " + this.ServerName + ", portal " + this.Portal + ", slot " + (object) this.TargetGroup + ")");
+      this.Log("----- start (launcher 2.5.0, server " + this.ServerName + ", portal " + this.Portal + ", slot " + (object) this.TargetGroup + ")");
       string version;
       StatusMessage msg = Patcher.CheckGameDir(this.gameDir, out version);
       if (msg != null)
@@ -562,8 +576,8 @@ namespace ForeverLauncher
       }
       else
       {
-        if (version != "1.60.1.70532")
-          this.Log("WARNING: build " + version + "; the key store was measured on 1.60.1.70532.");
+        if (version != ExpectedVersion)
+          this.Log("WARNING: build " + version + "; the key store was measured on " + ExpectedVersion + ".");
         StatusMessage m = Patcher.UntestedNotice(version);
         if (m != null)
         {
@@ -592,7 +606,7 @@ namespace ForeverLauncher
           {
             HashSet<int> before = new HashSet<int>(clients.Select<Process, int>((Func<Process, int>) (c => c.Id)));
             this.Say(MessageKind.Info, this.StartNew ? "p.openinganother" : "p.opening");
-            Process.Start(new ProcessStartInfo(this.exePath, "-config ForeverLauncher.wtf")
+            Process.Start(new ProcessStartInfo(this.exePath, "-config " + Patcher.ConfigName)
             {
               WorkingDirectory = this.gameDir,
               UseShellExecute = false

@@ -86,16 +86,37 @@
       </Setter>
     </Style>
 
+    <Style x:Key="MinimizeButton" TargetType="Button" BasedOn="{StaticResource FlatButton}">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Grid>
+              <Border x:Name="B" Background="{TemplateBinding Background}" Margin="-3,0,-3,-3" CornerRadius="0,0,0,10"/>
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="B" Property="Background" Value="#22FFFFFF"/>
+                <Setter Property="Foreground" Value="#FFFFFF"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
     <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource FlatButton}">
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
-            <Border x:Name="B" Background="Transparent" Padding="{TemplateBinding Padding}" CornerRadius="3">
-              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
+            <Grid>
+              <Border x:Name="B" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,1,1,0" Margin="-3,-1,-1,-3" CornerRadius="0,10,0,0"/>
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,3,3,2"/>
+            </Grid>
             <ControlTemplate.Triggers>
               <Trigger Property="IsMouseOver" Value="True">
                 <Setter TargetName="B" Property="Background" Value="#CCB0302A"/>
+                <Setter TargetName="B" Property="BorderBrush" Value="#FFAE9350"/>
                 <Setter Property="Foreground" Value="#FFFFFF"/>
               </Trigger>
             </ControlTemplate.Triggers>
@@ -131,7 +152,7 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
-            <Border x:Name="B" CornerRadius="11" Height="22" Padding="10,0" Background="#5865F2">
+            <Border x:Name="B" CornerRadius="14" Height="28" Padding="12,0" Background="#5865F2">
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Discord mark (simplified) -->
                 <Path Width="14" Height="11" Stretch="Uniform" Fill="#FFFFFF" VerticalAlignment="Center" Margin="0,0,6,0"
@@ -192,9 +213,36 @@
         </Setter.Value>
       </Setter>
     </Style>
+
+    <Style x:Key="CircleActionButton" TargetType="Button">
+      <Setter Property="Width" Value="30"/>
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="Margin" Value="0,0,6,0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Foreground" Value="#E8C46A"/>
+      <Setter Property="Background" Value="#40000000"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="B" Width="30" Height="30" CornerRadius="15" Background="{TemplateBinding Background}"
+                    BorderBrush="#44E8C46A" BorderThickness="1">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="B" Property="BorderBrush" Value="#CCE8C46A"/>
+                <Setter TargetName="B" Property="Background" Value="#30E8C46A"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
   </Window.Resources>
 
-  <Border CornerRadius="10" BorderThickness="1" BorderBrush="#55E8C46A" ClipToBounds="True">
+  <Grid>
+  <Border CornerRadius="10" BorderThickness="1" BorderBrush="#FFAE9350" ClipToBounds="True">
     <Border.Background>
       <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="#FF070913" Offset="0"/>
@@ -269,9 +317,10 @@
 
         <!-- Title bar (draggable) -->
         <Grid x:Name="TitleBar" Grid.Row="0" Background="Transparent">
-          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,1,0,0">
             <Path Width="16" Height="16" Stretch="Uniform" Fill="{StaticResource Gold}" Data="M8,0 L16,8 L8,16 L0,8 Z M8,4 L4,8 L8,12 L12,8 Z"/>
-            <TextBlock x:Name="LauncherTitleText" Text="FOREVER LAUNCHER v2.4.2" Margin="10,0,0,0" FontSize="12" FontWeight="SemiBold" Foreground="#C9BFA6" VerticalAlignment="Center"/>
+            <TextBlock x:Name="LauncherTitleText" Text="FOREVER-LAUNCHER" Margin="9,0,0,0" FontSize="12" FontWeight="SemiBold" Foreground="#C9BFA6" VerticalAlignment="Center"/>
+            <TextBlock x:Name="LauncherVersionText" Text="v2.5.0" Margin="5,0,0,0" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Dim}" VerticalAlignment="Center"/>
           </StackPanel>
           <Border x:Name="UpdateBanner" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
                   CornerRadius="12" Padding="12,4" Background="#AA3A2A08" BorderBrush="#88E8C46A" BorderThickness="1">
@@ -281,22 +330,26 @@
             </StackPanel>
           </Border>
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button x:Name="DiscordButton" Style="{StaticResource DiscordButton}" Content="Discord" Margin="0,0,10,0" VerticalAlignment="Center"/>
-            <Button x:Name="LanguageButton" Style="{StaticResource PillButton}" Content="EN   ▾" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Language"/>
-            <Button x:Name="MinButton" Style="{StaticResource FlatButton}" Width="46" Height="46" Content="—" FontSize="12"/>
-            <Button x:Name="CloseButton" Style="{StaticResource CloseButton}" Width="46" Height="46" Content="✕" FontSize="13"/>
+            <Button x:Name="DiscordButton" Style="{StaticResource CircleActionButton}" Height="30" Margin="0,1,6,-1" ToolTip="Discord" AutomationProperties.Name="Discord" VerticalAlignment="Center">
+              <Path Width="16" Height="14" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                    Data="M20.3,4.4 C18.8,3.7 17.1,3.2 15.4,2.9 C15.2,3.3 14.9,3.8 14.8,4.2 C12.9,3.9 11.1,3.9 9.2,4.2 C9.1,3.8 8.8,3.3 8.6,2.9 C6.9,3.2 5.2,3.7 3.7,4.4 C0.6,9 -0.3,13.5 0.2,18 C2.2,19.5 4.2,20.4 6.1,21 C6.6,20.4 7,19.7 7.4,18.9 C6.7,18.7 6,18.3 5.4,17.9 C5.6,17.8 5.7,17.7 5.9,17.6 C9.8,19.4 14.2,19.4 18.1,17.6 C18.3,17.7 18.4,17.8 18.6,17.9 C18,18.3 17.3,18.7 16.6,18.9 C17,19.7 17.4,20.4 17.9,21 C19.8,20.4 21.8,19.5 23.8,18 C24.3,12.8 22.9,8.3 20.3,4.4 Z M8,15.3 C6.8,15.3 5.9,14.2 5.9,12.9 C5.9,11.6 6.8,10.5 8,10.5 C9.2,10.5 10.1,11.6 10.1,12.9 C10.1,14.2 9.2,15.3 8,15.3 Z M16,15.3 C14.8,15.3 13.9,14.2 13.9,12.9 C13.9,11.6 14.8,10.5 16,10.5 C17.2,10.5 18.1,11.6 18.1,12.9 C18.1,14.2 17.2,15.3 16,15.3 Z"/>
+            </Button>
+            <Border Width="1" Height="18" Margin="0,1,6,-1" Background="#66707070" VerticalAlignment="Center"/>
+            <Button x:Name="LanguageButton" Style="{StaticResource PillButton}" Content="EN ▾" Height="30" Margin="0,1,10,-1" VerticalAlignment="Center" ToolTip="Language"/>
+            <Button x:Name="MinButton" Style="{StaticResource MinimizeButton}" Width="46" Height="46" Margin="3,0,0,0" Content="—" FontSize="12"/>
+            <Border Width="53" Height="46" IsHitTestVisible="False"/>
           </StackPanel>
         </Grid>
 
         <!-- Content -->
-        <Grid x:Name="PlayPanel" Grid.Row="1" Margin="44,6,28,0">
+          <Grid x:Name="PlayPanel" Grid.Row="1" Margin="41,6,28,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="330"/>
           </Grid.ColumnDefinitions>
 
-          <StackPanel Grid.Column="0" Margin="0,4,30,0">
-            <TextBlock x:Name="TitleText" Text="Forever Launcher" FontFamily="Palatino Linotype" FontSize="46" FontWeight="Bold" TextTrimming="CharacterEllipsis">
+          <StackPanel Grid.Column="0" Margin="0,-2,30,0">
+            <TextBlock x:Name="TitleText" Text="Forever-Launcher" FontFamily="Palatino Linotype" FontSize="46" FontWeight="Bold" TextTrimming="CharacterEllipsis">
               <TextBlock.Foreground>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                   <GradientStop Color="#FFFFF3CC" Offset="0"/>
@@ -306,56 +359,67 @@
               </TextBlock.Foreground>
               <TextBlock.Effect><DropShadowEffect BlurRadius="16" ShadowDepth="2" Color="#000000" Opacity="0.85"/></TextBlock.Effect>
             </TextBlock>
-            <TextBlock x:Name="SubtitleText" Text=" " FontSize="15" Foreground="#CFC6AE" Margin="4,-2,0,0">
+            <TextBlock x:Name="SubtitleText" Text=" " FontSize="15" Foreground="#CFC6AE" Margin="0,-2,0,0">
               <TextBlock.Effect><DropShadowEffect BlurRadius="6" ShadowDepth="1" Color="#000000" Opacity="0.9"/></TextBlock.Effect>
             </TextBlock>
 
             <!-- Server picker -->
             <StackPanel Orientation="Horizontal" Margin="2,14,0,0">
-              <TextBlock x:Name="ServerLabel" Text="Server" FontSize="12" Foreground="{StaticResource Dim}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-              <Button x:Name="ServerButton" Style="{StaticResource PillButton}" Content="-" Margin="0" MaxWidth="440"/>
+              <TextBlock x:Name="ServerLabel" Text="Server" FontSize="12" Foreground="{StaticResource Dim}" VerticalAlignment="Center" Margin="-1,0,11,0"/>
+              <Button x:Name="ServerButton" Style="{StaticResource PillButton}" Content="-" Margin="0,0,6,0" MaxWidth="440"/>
+              <Button x:Name="WebsiteLink" Style="{StaticResource CircleActionButton}" ToolTip="Website" AutomationProperties.Name="Website" Visibility="Collapsed">
+                <Grid Width="14" Height="14">
+                  <Ellipse Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.3"/>
+                  <Path Fill="Transparent" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.1"
+                        Data="M7,1 C4.2,4 4.2,10 7,13 M7,1 C9.8,4 9.8,10 7,13 M1,7 L13,7"/>
+                </Grid>
+              </Button>
+              <Border Width="1" Height="18" Margin="0,0,6,0" Background="#66707070" VerticalAlignment="Center"/>
+              <Button x:Name="EditServersButton" Style="{StaticResource CircleActionButton}" ToolTip="Edit servers" AutomationProperties.Name="Edit servers">
+                <Path Width="14" Height="14" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                      Data="M3,17.25 L3,21 L6.75,21 L17.81,9.94 L14.06,6.19 Z M20.71,7.04 C21.1,6.65 21.1,6.02 20.71,5.63 L18.37,3.29 C17.98,2.9 17.35,2.9 16.96,3.29 L15.13,5.12 L18.88,8.87 Z"/>
+              </Button>
+              <Button x:Name="ReloadServersButton" Style="{StaticResource CircleActionButton}" ToolTip="Reload Server Config" AutomationProperties.Name="Reload Server Config">
+                <Path Width="14" Height="14" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                      Data="M17.65,6.35 C16.2,4.9 14.21,4 12,4 C7.58,4 4.01,7.58 4.01,12 C4.01,16.42 7.58,20 12,20 C15.73,20 18.84,17.45 19.73,14 L17.65,14 C16.83,16.33 14.61,18 12,18 C8.69,18 6,15.31 6,12 C6,8.69 8.69,6 12,6 C13.66,6 15.14,6.69 16.22,7.78 L13,11 L20,11 L20,4 Z"/>
+              </Button>
             </StackPanel>
-            <WrapPanel Margin="54,6,0,0">
-              <Button x:Name="EditServersLink" Style="{StaticResource LinkButton}" Content=" " Margin="0,0,14,0" VerticalAlignment="Center"/>
-              <Button x:Name="ReloadServersLink" Style="{StaticResource LinkButton}" Content=" " Margin="0,0,14,0" VerticalAlignment="Center"/>
-              <Button x:Name="WebsiteLink" Style="{StaticResource LinkButton}" Content=" " Margin="0,0,14,0" VerticalAlignment="Center" Visibility="Collapsed"/>
-            </WrapPanel>
-
             <!-- Status: login line + one card per realm (2 x 2) -->
-            <Border Margin="0,12,0,0" CornerRadius="8" Padding="16,12"
+            <Border Margin="1,12,0,0" CornerRadius="8" Padding="12"
                     Background="{StaticResource Card}" BorderBrush="{StaticResource CardLine}" BorderThickness="1">
               <StackPanel>
                 <DockPanel>
                   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse x:Name="LoginDot" Width="7" Height="7" Fill="#555" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="LoginLabel" Text="Login" Margin="6,0,10,0" FontSize="12" Foreground="{StaticResource Dim}"/>
-                    <TextBlock x:Name="PingText" Text="" FontSize="12" Foreground="{StaticResource Dim}"/>
+                    <TextBlock x:Name="LoginLabel" Text="Login · —ms" Margin="6,0,10,0" FontSize="12" Foreground="{StaticResource Dim}"/>
                   </StackPanel>
                   <StackPanel Orientation="Horizontal">
-                    <Grid Width="14" Height="14" VerticalAlignment="Center">
-                      <Ellipse x:Name="StatusHalo" Width="14" Height="14" Fill="#8A8A8A" Opacity="0.35" RenderTransformOrigin="0.5,0.5">
+                    <Grid Width="30" Height="30" VerticalAlignment="Center">
+                      <Ellipse x:Name="StatusHalo" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="#8A8A8A" Opacity="0.35" RenderTransformOrigin="0.5,0.5">
                         <Ellipse.RenderTransform><ScaleTransform x:Name="HaloScale"/></Ellipse.RenderTransform>
                       </Ellipse>
-                      <Ellipse x:Name="StatusDot" Width="10" Height="10" Fill="#8A8A8A"/>
+                      <Ellipse x:Name="StatusDot" Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="#8A8A8A"/>
                     </Grid>
                     <TextBlock x:Name="StatusText" Text=" " Margin="12,0,0,0" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
                   </StackPanel>
                 </DockPanel>
-                <TextBlock x:Name="DetailText" Text=" " Margin="26,2,0,0" FontSize="13" Foreground="#D8CFB8"/>
+                <TextBlock x:Name="DetailText" Text=" " Margin="0" FontSize="13" Foreground="#D8CFB8" TextWrapping="Wrap" Visibility="Collapsed"/>
                 <UniformGrid x:Name="RealmGrid" Columns="2" Margin="0,6,0,0"/>
-                <TextBlock x:Name="MessageText" Visibility="Collapsed" Margin="4,8,0,0" FontSize="13" TextWrapping="Wrap" Foreground="{StaticResource Gold}"/>
+                <TextBlock x:Name="MessageText" Visibility="Collapsed" Margin="0,8,0,0" FontSize="13" TextWrapping="Wrap" Foreground="{StaticResource Gold}"/>
               </StackPanel>
             </Border>
 
-            <WrapPanel x:Name="LinksPanel" Margin="0,12,0,0"/>
+            <WrapPanel x:Name="LinksPanel" Margin="1,18,0,0"/>
           </StackPanel>
 
           <!-- News -->
-          <Border Grid.Column="1" CornerRadius="8" Padding="20,16" Margin="0,4,0,18"
+          <Border Grid.Column="1" CornerRadius="8" Padding="20,16" Margin="0,4,14,18"
                   Background="{StaticResource Card}" BorderBrush="{StaticResource CardLine}" BorderThickness="1">
             <DockPanel>
               <TextBlock x:Name="NewsHeader" DockPanel.Dock="Top" Text=" " FontSize="12" FontWeight="Bold" Foreground="{StaticResource Gold}" Margin="0,0,0,10"/>
-              <ScrollViewer VerticalScrollBarVisibility="Hidden">
+              <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled"
+                            BorderThickness="0" BorderBrush="Transparent" Background="Transparent"
+                            Focusable="False" FocusVisualStyle="{x:Null}">
                 <StackPanel x:Name="NewsList">
                   <TextBlock x:Name="NewsPlaceholder" Text=" " Foreground="{StaticResource Dim}" FontSize="13"/>
                 </StackPanel>
@@ -372,7 +436,7 @@
               <GradientStop Color="#F0040509" Offset="1"/>
             </LinearGradientBrush>
           </Border.Background>
-          <Grid Margin="44,8,28,4">
+          <Grid Margin="41,8,28,4">
             <Grid.RowDefinitions>
               <RowDefinition Height="*"/>
               <RowDefinition Height="18"/>
@@ -381,10 +445,10 @@
               <ColumnDefinition Width="*"/>
               <ColumnDefinition Width="330"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+            <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,30,0">
               <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <TextBlock x:Name="FolderText" Grid.Column="0" Text="" FontSize="12" Foreground="#6F6857" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip=""/>
+                <TextBlock x:Name="FolderText" Grid.Column="0" Text="" FontSize="12" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip=""/>
                 <Button x:Name="FolderButton" Grid.Column="1" Style="{StaticResource LinkButton}" Content=" " Margin="12,0,0,0" VerticalAlignment="Center"/>
               </Grid>
               <Grid Margin="0,4,0,0">
@@ -394,10 +458,13 @@
               </Grid>
               <CheckBox x:Name="NoFogBox" Content=" " FontSize="12" Foreground="{StaticResource Dim}" Margin="0,4,0,0" HorizontalAlignment="Left" Visibility="Collapsed"/>
             </StackPanel>
-            <Button x:Name="PlayButton" Grid.Row="0" Grid.Column="1" Style="{StaticResource PlayButton}" Height="58" Content=" " VerticalAlignment="Center"/>
-            <TextBlock x:Name="StepText" Grid.Row="1" Grid.ColumnSpan="2" Text=" " FontSize="12" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Height="18" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+            <Button x:Name="PlayButton" Grid.Row="0" Grid.Column="1" Style="{StaticResource PlayButton}" Height="58" Margin="0,0,14,0" Content=" " VerticalAlignment="Center"/>
+            <TextBlock x:Name="StepText" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,-18,0" Text=" " FontSize="12" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Height="18" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" TextAlignment="Right"/>
           </Grid>
         </Border>      </Grid>
     </Grid>
   </Border>
+  <Button x:Name="CloseButton" Style="{StaticResource CloseButton}" Width="46" Height="46" Content="✕" FontSize="13"
+          HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,1,1,0"/>
+  </Grid>
 </Window>

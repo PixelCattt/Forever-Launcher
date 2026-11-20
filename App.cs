@@ -13,7 +13,7 @@ namespace ForeverLauncher
 {
   public static class App
   {
-    public const string Version = "2.4.2";
+    public const string Version = "2.5.0";
     public const string Title = "Forever Launcher";
     public const string ReleasesUrl = "https://github.com/PixelCattt/Forever-Launcher/releases/latest";
     public const string DiscordUrl = "https://discord.gg/gRjgsqXNje";
@@ -25,7 +25,7 @@ namespace ForeverLauncher
       string[] commandLineArgs = Environment.GetCommandLineArgs();
       int num1 = Array.IndexOf<string>(commandLineArgs, "--updated");
       if (num1 > 0)
-        App.UpdatedTo = num1 + 1 < commandLineArgs.Length ? commandLineArgs[num1 + 1] : "2.4.2";
+        App.UpdatedTo = num1 + 1 < commandLineArgs.Length ? commandLineArgs[num1 + 1] : "2.5.0";
       bool createdNew;
       using (Mutex mutex = new Mutex(true, "ForeverLauncher-single", out createdNew))
       {
@@ -102,7 +102,7 @@ namespace ForeverLauncher
       try
       {
         Directory.CreateDirectory(Path.GetDirectoryName(App.CrashFile));
-        System.IO.File.AppendAllText(App.CrashFile, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " v2.4.2" + Environment.NewLine + (object) ex + Environment.NewLine + Environment.NewLine);
+        System.IO.File.AppendAllText(App.CrashFile, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " v2.5.0" + Environment.NewLine + (object) ex + Environment.NewLine + Environment.NewLine);
       }
       catch
       {

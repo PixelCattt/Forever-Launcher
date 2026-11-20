@@ -37,12 +37,11 @@ namespace ForeverLauncher
     private System.Windows.Controls.Button updateLink;
     private System.Windows.Controls.Button languageButton;
     private System.Windows.Controls.Button serverButton;
-    private System.Windows.Controls.Button editServersLink;
-    private System.Windows.Controls.Button reloadServersLink;
+    private System.Windows.Controls.Button editServersButton;
+    private System.Windows.Controls.Button reloadServersButton;
     private System.Windows.Controls.Button websiteLink;
     private TextBlock statusText;
     private TextBlock detailText;
-    private TextBlock pingText;
     private TextBlock messageText;
     private TextBlock stepText;
     private TextBlock folderText;
@@ -54,6 +53,7 @@ namespace ForeverLauncher
     private TextBlock newsPlaceholder;
     private TextBlock titleText;
     private TextBlock launcherTitleText;
+    private TextBlock launcherVersionText;
     private TextBlock serverLabel;
     private Ellipse statusDot;
     private Ellipse statusHalo;
@@ -99,7 +99,6 @@ namespace ForeverLauncher
       this.updateLink = this.Find<System.Windows.Controls.Button>("UpdateLink");
       this.statusText = this.Find<TextBlock>("StatusText");
       this.detailText = this.Find<TextBlock>("DetailText");
-      this.pingText = this.Find<TextBlock>("PingText");
       this.messageText = this.Find<TextBlock>("MessageText");
       this.stepText = this.Find<TextBlock>("StepText");
       this.folderText = this.Find<TextBlock>("FolderText");
@@ -120,14 +119,15 @@ namespace ForeverLauncher
       this.languageButton = this.Find<System.Windows.Controls.Button>("LanguageButton");
       this.titleText = this.Find<TextBlock>("TitleText");
       this.launcherTitleText = this.Find<TextBlock>("LauncherTitleText");
+      this.launcherVersionText = this.Find<TextBlock>("LauncherVersionText");
       this.serverLabel = this.Find<TextBlock>("ServerLabel");
       this.serverButton = this.Find<System.Windows.Controls.Button>("ServerButton");
-      this.editServersLink = this.Find<System.Windows.Controls.Button>("EditServersLink");
-      this.reloadServersLink = this.Find<System.Windows.Controls.Button>("ReloadServersLink");
+      this.editServersButton = this.Find<System.Windows.Controls.Button>("EditServersButton");
+      this.reloadServersButton = this.Find<System.Windows.Controls.Button>("ReloadServersButton");
       this.websiteLink = this.Find<System.Windows.Controls.Button>("WebsiteLink");
       this.serverButton.Click += (RoutedEventHandler) ((s, e) => this.ShowServerMenu());
-      this.editServersLink.Click += (RoutedEventHandler) ((s, e) => this.EditServers());
-      this.reloadServersLink.Click += (RoutedEventHandler) ((s, e) => this.LoadServers());
+      this.editServersButton.Click += (RoutedEventHandler) ((s, e) => this.EditServers());
+      this.reloadServersButton.Click += (RoutedEventHandler) ((s, e) => this.LoadServers());
       this.websiteLink.Click += (RoutedEventHandler) ((s, e) =>
       {
         if (this.server == null)
@@ -136,9 +136,9 @@ namespace ForeverLauncher
       });
       System.Windows.Controls.Button button = this.Find<System.Windows.Controls.Button>("DiscordButton");
       button.Click += (RoutedEventHandler) ((s, e) => LauncherWindow.OpenUrl("https://discord.gg/gRjgsqXNje"));
-      button.ToolTip = (object) "https://discord.gg/gRjgsqXNje";
+      button.ToolTip = (object) "Discord";
       this.languageButton.Click += (RoutedEventHandler) ((s, e) => this.ShowLanguageMenu());
-      this.launcherTitleText.Text = "FOREVER LAUNCHER v" + App.Version;
+      this.launcherVersionText.Text = "v" + App.Version;
       this.Find<Grid>("TitleBar").MouseLeftButtonDown += (MouseButtonEventHandler) ((s, e) =>
       {
         if (e.ButtonState != MouseButtonState.Pressed)
@@ -206,7 +206,7 @@ namespace ForeverLauncher
       this.launcherUpdate = r;
       this.updateState = LauncherWindow.UpdateState.Available;
       this.RenderLauncherUpdate();
-      if (!Updater.AutoUpdate || !Updater.CanWriteHere())
+      if (!Updater.CanWriteHere())
         return;
       this.RunLauncherUpdate();
     }
@@ -248,7 +248,7 @@ namespace ForeverLauncher
         case LauncherWindow.UpdateState.None:
           return;
         case LauncherWindow.UpdateState.Available:
-          this.updateText.Text = Localization.Get("ui.update", (object) str);
+          this.updateText.Text = Localization.Get("ui.update", str);
           this.updateLink.Content = (object) Localization.Get("upd.now");
           break;
         case LauncherWindow.UpdateState.Downloading:
@@ -283,13 +283,23 @@ namespace ForeverLauncher
     private void ShowLanguageMenu()
     {
       System.Windows.Controls.ContextMenu menu = new System.Windows.Controls.ContextMenu();
-      string[] codes = { "en", "es", "ru", "de" };
-      string[] names = { "English", "Español", "Русский", "Deutsch" };
-      for (int i = 0; i < codes.Length; i++)
+      Grid.SetIsSharedSizeScope(menu, true);
+      foreach (string code in Localization.Langs)
       {
-        string code = codes[i];
         System.Windows.Controls.MenuItem item = new System.Windows.Controls.MenuItem();
-        item.Header = code.ToUpperInvariant() + "   " + names[i];
+        Grid header = new Grid();
+        header.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto, SharedSizeGroup = "LanguageCode" });
+        header.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+        header.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+        TextBlock languageCode = new TextBlock() { Text = code.ToUpperInvariant() };
+        TextBlock separator = new TextBlock() { Text = " (", Margin = new Thickness(4, 0, 0, 0) };
+        TextBlock languageName = new TextBlock() { Text = LauncherWindow.LanguageName(code) + ")" };
+        Grid.SetColumn(separator, 1);
+        Grid.SetColumn(languageName, 2);
+        header.Children.Add(languageCode);
+        header.Children.Add(separator);
+        header.Children.Add(languageName);
+        item.Header = header;
         item.IsCheckable = true;
         item.IsChecked = Localization.Lang == code;
         item.Click += (RoutedEventHandler) ((o, e) => this.SetLanguage(code));
@@ -300,23 +310,36 @@ namespace ForeverLauncher
       menu.IsOpen = true;
     }
 
+    private static string LanguageName(string code)
+    {
+      switch (code)
+      {
+        case "en": return "English";
+        case "es": return "Español";
+        case "ru": return "Русский";
+        case "de": return "Deutsch";
+        default: return code;
+      }
+    }
+
     private void ApplyLanguage()
     {
       System.Windows.Media.Brush resource = (System.Windows.Media.Brush) this.Window.FindResource((object) "Gold");
       SolidColorBrush solidColorBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb((byte) 51, (byte) 232, (byte) 196, (byte) 106));
       this.languageButton.Content = (object) (Localization.Lang.ToUpperInvariant() + "   ▾");
+      this.titleText.Text = "Forever-Launcher";
       this.subtitleText.Text = Localization.Get("ui.subtitle");
       this.newsHeader.Text = Localization.Get("ui.news");
       this.loginLabel.Text = Localization.Get("ui.login");
       this.logButton.Content = (object) Localization.Get("ui.viewlog");
       this.serverLabel.Text = Localization.Get("ui.server");
-      this.editServersLink.Content = (object) Localization.Get("ui.editservers");
-      this.reloadServersLink.Content = (object) Localization.Get("ui.reloadservers");
-      this.websiteLink.Content = (object) Localization.Get("ui.website");
+      this.editServersButton.ToolTip = Localization.Get("ui.editservers");
+      this.reloadServersButton.ToolTip = Localization.Get("ui.reloadservers");
+      this.websiteLink.ToolTip = Localization.Get("ui.website");
       this.updateLink.Content = (object) Localization.Get("ui.download");
       this.RenderLauncherUpdate();
       this.playButton.Content = (object) Localization.Get(this.gameRunning ? "ui.playanother" : "ui.play");
-      this.folderButton.Content = (object) Localization.Get(this.gameDir == null ? "ui.pickfolder" : "ui.changefolder");
+      this.folderButton.Content = (object) Localization.Get("ui.selectfolder");
       this.UpdateFogControl();
       if (this.newsPlaceholder.Parent != null)
         this.newsPlaceholder.Text = Localization.Get(this.lastStatus == null ? "ui.loading" : "ui.newsfail");
@@ -437,6 +460,11 @@ namespace ForeverLauncher
         c = LauncherWindow.Amber;
         key = "status.worlddown";
       }
+      else if (s.WorldUp)
+      {
+        c = LauncherWindow.Amber;
+        key = "status.logindown";
+      }
       else if (s.FeedFresh && s.FeedLoginUp)
       {
         c = LauncherWindow.Amber;
@@ -457,8 +485,9 @@ namespace ForeverLauncher
       this.statusText.Text = Localization.Get(key);
       LauncherWindow.SetDot((Shape) this.loginDot, s.LoginUp ? LauncherWindow.Green : LauncherWindow.Red);
       this.FillRealms(s);
-      this.pingText.Text = s.LoginMs >= 0L ? s.LoginMs.ToString() + " ms" : "";
-      this.detailText.Text = s.LoginUp || s.WorldUp ? " " : Localization.Get("status.noresponse");
+      this.loginLabel.Text = Localization.Get("ui.login") + (s.LoginMs >= 0L ? " · " + s.LoginMs.ToString() + "ms" : "");
+      this.detailText.Text = "";
+      this.detailText.Visibility = Visibility.Collapsed;
       string str = s.Root.Get("message") ?? "";
       this.messageText.Text = str;
       this.messageText.Visibility = string.IsNullOrWhiteSpace(str) ? Visibility.Collapsed : Visibility.Visible;
@@ -473,7 +502,7 @@ namespace ForeverLauncher
         this.ShowNewsText(Localization.Get("ui.newsfail"));
       if (this.updateState != LauncherWindow.UpdateState.None || !StatusClient.IsNewer(s.LatestLauncher, App.Version))
         return;
-      this.updateText.Text = Localization.Get("ui.update", (object) s.LatestLauncher);
+      this.updateText.Text = Localization.Get("ui.update", s.LatestLauncher);
       if (!string.IsNullOrEmpty(s.LauncherUrl))
         this.updateUrl = s.LauncherUrl;
       this.updateBanner.Visibility = Visibility.Visible;
@@ -516,7 +545,7 @@ namespace ForeverLauncher
         element3.Children.Add((UIElement) element2);
         UIElementCollection children1 = element3.Children;
         TextBlock textBlock = new TextBlock();
-        textBlock.Text = Localization.Get(realm.Up ? "realm.online" : "realm.offline") + (realm.Up ? "  ·  " + (object) realm.Ms + " ms" : "");
+        textBlock.Text = Localization.Get(realm.Up ? "realm.online" : "realm.offline") + (realm.Up ? "  ·  " + (object) realm.Ms + "ms" : "");
         textBlock.FontSize = 11.5;
         textBlock.Foreground = realm.Up ? (System.Windows.Media.Brush) new SolidColorBrush(LauncherWindow.Green) : resource;
         textBlock.Margin = new Thickness(16.0, 2.0, 0.0, 0.0);
@@ -564,14 +593,14 @@ namespace ForeverLauncher
       this.statusText.Text = Localization.Get("status.noserver");
       LauncherWindow.SetDot((Shape) this.loginDot, LauncherWindow.Grey);
       this.realmGrid.Children.Clear();
-      this.pingText.Text = "";
       TextBlock detailText = this.detailText;
       string str;
       if (Servers.Errors.Count <= 0)
         str = Localization.Get("srv.none");
       else
-        str = Localization.Get("srv.errors", (object) string.Join("; ", Servers.Errors.ToArray()));
+        str = Localization.Get("srv.errors", (object) string.Join("\n- ", Servers.Errors.ToArray()));
       detailText.Text = str;
+      detailText.Visibility = Visibility.Visible;
       this.messageText.Visibility = Visibility.Collapsed;
       this.ShowNewsText("");
       this.linksPanel.Children.Clear();
@@ -598,7 +627,7 @@ namespace ForeverLauncher
       if (Servers.Errors.Count > 0)
         this.Step(new StatusMessage(MessageKind.Warn, "srv.errors", new object[1]
         {
-          (object) string.Join("; ", Servers.Errors.ToArray())
+          (object) string.Join("\n- ", Servers.Errors.ToArray())
         }));
       else if (Servers.List.Count == 0)
         this.Step(new StatusMessage(MessageKind.Warn, "srv.none", new object[0]));
@@ -614,9 +643,9 @@ namespace ForeverLauncher
     {
       this.server = s;
       this.lastStatus = (ServerStatus) null;
-      this.titleText.Text = s != null ? s.Name : "Forever Launcher";
-      this.serverButton.Content = (object) ((s != null ? s.Name + "  (" + s.Portal + ")" : "-") + "  ▾");
+      this.serverButton.Content = (object) (s != null ? s.Name + " (" + s.Portal + ")  ▾" : "-");
       this.websiteLink.Visibility = s == null || string.IsNullOrEmpty(s.Website) ? Visibility.Collapsed : Visibility.Visible;
+      this.websiteLink.ToolTip = s != null && !string.IsNullOrEmpty(s.Website) ? s.Website : Localization.Get("ui.website");
       this.updateBanner.Visibility = Visibility.Collapsed;
       if (save && s != null)
         Settings.SaveServer(s.Name);
@@ -638,24 +667,26 @@ namespace ForeverLauncher
     private void ShowServerMenu()
     {
       System.Windows.Controls.ContextMenu contextMenu = new System.Windows.Controls.ContextMenu();
+      Grid.SetIsSharedSizeScope(contextMenu, true);
       foreach (ServerEntry serverEntry in Servers.List)
       {
         ServerEntry entry = serverEntry;
         System.Windows.Controls.MenuItem menuItem = new System.Windows.Controls.MenuItem();
-        menuItem.Header = (object) (serverEntry.Name + "   " + serverEntry.Portal);
+        Grid header = new Grid();
+        header.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto, SharedSizeGroup = "ServerName" });
+        header.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+        TextBlock serverName = new TextBlock() { Text = serverEntry.Name, Margin = new Thickness(0, 0, 6, 0) };
+        TextBlock serverAddress = new TextBlock() { Text = "(" + serverEntry.Portal + ")" };
+        Grid.SetColumn(serverAddress, 1);
+        header.Children.Add(serverName);
+        header.Children.Add(serverAddress);
+        menuItem.Header = header;
         menuItem.IsCheckable = true;
         menuItem.IsChecked = serverEntry == this.server;
         System.Windows.Controls.MenuItem newItem = menuItem;
         newItem.Click += (RoutedEventHandler) ((o, e) => this.SelectServer(entry, true));
         contextMenu.Items.Add((object) newItem);
       }
-      if (contextMenu.Items.Count > 0)
-        contextMenu.Items.Add((object) new Separator());
-      System.Windows.Controls.MenuItem menuItem1 = new System.Windows.Controls.MenuItem();
-      menuItem1.Header = (object) Localization.Get("ui.editservers");
-      System.Windows.Controls.MenuItem newItem1 = menuItem1;
-      newItem1.Click += (RoutedEventHandler) ((o, e) => this.EditServers());
-      contextMenu.Items.Add((object) newItem1);
       contextMenu.PlacementTarget = (UIElement) this.serverButton;
       contextMenu.Placement = PlacementMode.Bottom;
       contextMenu.IsOpen = true;
@@ -796,10 +827,10 @@ namespace ForeverLauncher
       this.gameDir = dir;
       string version;
       StatusMessage m = Patcher.CheckGameDir(dir, out version);
-      this.folderText.Text = dir ?? "";
+      this.folderText.Text = string.IsNullOrEmpty(version) ? "No Game Directory Selected" : dir ?? "";
       this.folderText.ToolTip = (object) dir;
-      this.folderButton.Content = (object) Localization.Get(dir == null ? "ui.pickfolder" : "ui.changefolder");
-      this.versionText.Text = string.IsNullOrEmpty(version) ? "WoW version unavailable" : "WoW " + version;
+      this.folderButton.Content = (object) Localization.Get("ui.selectfolder");
+      this.versionText.Text = string.IsNullOrEmpty(version) ? "" : "WoW " + version;
       this.UpdateFogControl();
       if (m != null)
       {
@@ -816,19 +847,22 @@ namespace ForeverLauncher
 
     private void PickFolder()
     {
-      using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+      using (OpenFileDialog fileDialog = new OpenFileDialog())
       {
-        folderBrowserDialog.Description = Localization.Get("ui.folderdlg");
-        folderBrowserDialog.ShowNewFolderButton = false;
+        fileDialog.Title = Localization.Get("dir.choose");
+        fileDialog.Filter = "World of Warcraft|Wow.exe";
+        fileDialog.FileName = "Wow.exe";
+        fileDialog.CheckFileExists = true;
+        fileDialog.CheckPathExists = true;
+        fileDialog.Multiselect = false;
+        fileDialog.ValidateNames = true;
         if (this.gameDir != null && Directory.Exists(this.gameDir))
-          folderBrowserDialog.SelectedPath = this.gameDir;
-        if (folderBrowserDialog.ShowDialog() != DialogResult.OK)
+          fileDialog.InitialDirectory = this.gameDir;
+        if (fileDialog.ShowDialog() != DialogResult.OK)
           return;
-        string str = folderBrowserDialog.SelectedPath;
-        string path1 = System.IO.Path.Combine(str, "_classic_beta_");
-        if (!System.IO.File.Exists(System.IO.Path.Combine(str, "Wow.exe")) && System.IO.File.Exists(System.IO.Path.Combine(path1, "Wow.exe")))
-          str = path1;
-        this.SetGameDir(str, true);
+        if (!string.Equals(System.IO.Path.GetFileName(fileDialog.FileName), "Wow.exe", StringComparison.OrdinalIgnoreCase))
+          return;
+        this.SetGameDir(System.IO.Path.GetDirectoryName(fileDialog.FileName), true);
       }
     }
 
@@ -869,13 +903,6 @@ namespace ForeverLauncher
         Settings.SaveGameDir(this.gameDir);
         if (this.server == null)
           this.Step(new StatusMessage(MessageKind.Error, "srv.none", new object[0]));
-        else if (this.server.Portal.EndsWith("example.com", StringComparison.OrdinalIgnoreCase))
-        {
-          this.Step(new StatusMessage(MessageKind.Error, "srv.example", new object[1]
-          {
-            (object) this.server.Name
-          }));
-        }
         else
         {
           Patcher patcher = new Patcher(this.gameDir, this.server)
